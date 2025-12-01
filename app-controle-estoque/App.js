@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { UserProvider } from './src/context/UserContext';
-import { initConfigDatabase, getConfig } from './src/api/api';
+import { initConfigDatabase, getConfig, initVolumesDatabase } from './src/api/api';
 import LoginScreen from './src/screens/LoginScreen';
 import MainNavigation from './src/navigation/MainNavigation';
 
@@ -19,6 +19,7 @@ export default function App() {
     try {
       // Inicializa banco de dados
       await initConfigDatabase();
+      await initVolumesDatabase();
       
       // Verifica se tem configuração salva
       const config = await getConfig();

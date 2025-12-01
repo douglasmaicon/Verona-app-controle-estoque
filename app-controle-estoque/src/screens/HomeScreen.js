@@ -11,7 +11,7 @@ export default function HomeScreen() {
       icon: 'barcode-outline', 
       title: 'Últimas Leituras', 
       value: '0', 
-      color: '#4CAF50' 
+      color: '#FF9800'
     },
     { 
       icon: 'cube-outline', 
@@ -23,7 +23,7 @@ export default function HomeScreen() {
       icon: 'checkmark-circle-outline', 
       title: 'Conferências Hoje', 
       value: '0', 
-      color: '#FF9800' 
+      color: '#4CAF50' 
     },
   ];
 

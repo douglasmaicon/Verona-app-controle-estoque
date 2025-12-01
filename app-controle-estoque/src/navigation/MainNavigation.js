@@ -20,7 +20,7 @@ const ICONS = {
   boxes: (props) => <FontAwesome5 name="boxes" {...props} />,
   truck: (props) => <MaterialCommunityIcons name="truck" {...props} />,
   transfer: (props) => <MaterialCommunityIcons name="swap-horizontal" {...props} />,
-  audit: (props) => <MaterialCommunityIcons name="clipboard-check-outline" {...props} />,
+  audit: (props) => <MaterialCommunityIcons name="clipboard-check-outline" {...props} />,  
 };
 
 // Cores do tema
@@ -63,6 +63,12 @@ export default function MainNavigation({ user, onLogout }) {
           component: AuditScreen,
           icon: ICONS.audit,
           label: "Auditoria",
+        },
+        {
+          name: "Entregas",
+          component: DeliveryScreen,
+          icon: ICONS.truck,
+          label: "Entregas",
         },
         {
           name: "Perfil",
