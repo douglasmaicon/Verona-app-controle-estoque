@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, Platform } from 'react-native';
 import { UserProvider } from './src/context/UserContext';
 import { initConfigDatabase, getConfig, initVolumesDatabase } from './src/api/api';
 import LoginScreen from './src/screens/LoginScreen';
 import MainNavigation from './src/navigation/MainNavigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as NavigationBar from 'expo-navigation-bar';
+
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasConfig, setHasConfig] = useState(false);
   const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      NavigationBar.setBackgroundColorAsync('transparent');
+      NavigationBar.setBehaviorAsync('overlay-swipe');
+      NavigationBar.setVisibilityAsync('hidden');
+    }
+  }, []);
 
   useEffect(() => {
     initializeApp();
@@ -52,19 +63,21 @@ export default function App() {
   }
 
   return (
-    <UserProvider>
-      <NavigationContainer>
-        {user ? (
-          <MainNavigation user={user} onLogout={handleLogout} />
-        ) : (
-          <LoginScreen
-            onLogin={handleLogin}
-            isConfigMode={!hasConfig}
-            onConfigSaved={handleConfigSaved}
-          />
-        )}
-      </NavigationContainer>
-    </UserProvider>
+    <SafeAreaProvider>
+      <UserProvider>
+        <NavigationContainer>
+          {user ? (
+            <MainNavigation user={user} onLogout={handleLogout} />
+          ) : (
+            <LoginScreen
+              onLogin={handleLogin}
+              isConfigMode={!hasConfig}
+              onConfigSaved={handleConfigSaved}
+            />
+          )}
+        </NavigationContainer>
+      </UserProvider>
+    </SafeAreaProvider>    
   );
 }
 
@@ -74,5 +87,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+    paddingBottom: Platform.OS === 'ios' ? 88 : 100,
   },
 });

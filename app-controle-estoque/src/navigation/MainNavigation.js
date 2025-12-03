@@ -58,12 +58,12 @@ export default function MainNavigation({ user, onLogout }) {
           icon: ICONS.boxes,
           label: "Conferências",
         },
-        {
-          name: "Auditoria",
-          component: AuditScreen,
-          icon: ICONS.audit,
-          label: "Auditoria",
-        },
+        // {
+        //   name: "Auditoria",
+        //   component: AuditScreen,
+        //   icon: ICONS.audit,
+        //   label: "Auditoria",
+        // },
         {
           name: "Entregas",
           component: DeliveryScreen,
@@ -131,8 +131,8 @@ export default function MainNavigation({ user, onLogout }) {
         tabBarInactiveTintColor: COLORS.inactive,
         tabBarStyle: {
           backgroundColor: COLORS.primary,
-          height: Platform.OS === "ios" ? 88 : 65,
-          paddingBottom: Platform.OS === "ios" ? 28 : 8,
+          height: Platform.OS === "ios" ? 88 : 70,
+          paddingBottom: Platform.OS === "ios" ? 28 : 12,
           paddingTop: 8,
           borderTopWidth: 0,
           elevation: 8,
@@ -140,6 +140,8 @@ export default function MainNavigation({ user, onLogout }) {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
+          position: 'absolute',
+          bottom: 0,
         },
         tabBarLabelStyle: {
           fontSize: 12,

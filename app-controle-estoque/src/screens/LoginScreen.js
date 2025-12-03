@@ -311,6 +311,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+    paddingBottom: Platform.OS === 'ios' ? 88 : 70,
   },
   overlay: {
     flex: 1,

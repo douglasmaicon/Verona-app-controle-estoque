@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 
 export default function AuditScreen() {
   return (
@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    paddingBottom: Platform.OS === 'ios' ? 88 : 70,
   },
   text: {
     fontSize: 24,
