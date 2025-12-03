@@ -14,6 +14,7 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { getApiBaseUrl, verificarCodigoLido, salvarCodigoLido, buscarVolumesLidos, limparVolumesLidos } from '../api/api';
 import { useUser } from '../context/UserContext';
 
@@ -37,10 +38,16 @@ export default function DeliveryScreen() {
     carregarVendas();
     carregarSom();
     
+    // Atualiza a cada 30 segundos
+    const interval = setInterval(() => {
+      carregarVendas();
+    }, 30000);
+    
     return () => {
       if (sound) {
         sound.unloadAsync();
       }
+      clearInterval(interval);
     };
   }, []);
 
@@ -48,7 +55,7 @@ export default function DeliveryScreen() {
   const carregarSom = async () => {
     try {
       const { sound } = await Audio.Sound.createAsync(
-        require('../../assets/beep.mp3') // Vamos criar este arquivo
+        require('../../assets/beep.mp3') 
       );
       setSound(sound);
     } catch (error) {
@@ -72,13 +79,13 @@ export default function DeliveryScreen() {
     setIsLoading(true);
     try {
       const baseUrl = await getApiBaseUrl();
-      console.log('Buscando vendas em:', `${baseUrl}/vendas-pendentes`);
+      // console.log('Buscando vendas em:', `${baseUrl}/vendas-pendentes`);
       
       const response = await fetch(`${baseUrl}/vendas-pendentes`);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Vendas recebidas:', JSON.stringify(data, null, 2));
+        // console.log('Vendas recebidas:', JSON.stringify(data, null, 2));
         setVendas(data);
       } else {
         Alert.alert('Erro', 'Não foi possível carregar as vendas');
@@ -182,8 +189,11 @@ export default function DeliveryScreen() {
       // Verifica se completou todos os volumes
       if (volumes.length >= itemSelecionado.totalVolumesEsperados) {
         fecharScanner();
-        // Não pede confirmação, libera direto
-        liberarEntrega();
+        setVolumesLidos(volumes); // Atualiza antes de liberar
+        // Aguarda um momento para garantir que o state foi atualizado
+        setTimeout(() => {
+          //liberarEntrega(volumes); // Passa os volumes como parâmetro
+        }, 300);
       } else {
         Alert.alert(
           '✓ Volume Registrado!',
@@ -225,7 +235,7 @@ export default function DeliveryScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itemVendaCodigo: itemSelecionado.codigo,
-          usuarioId: user?.id || user?.codigo, // Tenta id ou codigo
+          usuarioId: user?.id || user?.codigo, 
           usuarioNome: user?.nome,
           codigosBarras: codigosBarras,
         }),
@@ -239,12 +249,43 @@ export default function DeliveryScreen() {
         await limparVolumesLidos(itemSelecionado.codigo);
         
         Alert.alert('✅ Sucesso!', result.message, [
-          { text: 'OK', onPress: () => {
-            setItemSelecionado(null);
-            setVolumesLidos([]);
-            carregarVendas();
-          }}
-        ]);
+          { text: 'OK', onPress: async () => 
+            {
+              
+              // Limpa seleção atual
+              setItemSelecionado(null);
+              setVolumesLidos([]);
+
+              // ATUALIZA vendas para obter itens liberados
+              carregarVendas();
+
+              const baseUrl = await getApiBaseUrl();
+              const response = await fetch(`${baseUrl}/vendas-pendentes`);
+
+              if (response.ok) {
+                const vendasAtualizadas = await response.json();
+                setVendas(vendasAtualizadas);
+                
+                // Atualiza a venda selecionada atual
+                const vendaAtualizada = vendasAtualizadas.find(v => v.codigo === vendaSelecionada.codigo);
+                if (vendaAtualizada) {
+                  setVendaSelecionada(vendaAtualizada);
+                }
+
+
+              // VERIFICA SE TODOS OS ITENS DA VENDA FORAM LIBERADOS
+              const itens = vendaSelecionada.itens;
+              const todosLiberados = itens.every(i => i.libEntrega === "SIM" || i.codigo === itemSelecionado.codigo);
+                          
+              if (todosLiberados) {
+                // Volta para a lista de vendas
+                setVendaSelecionada(null);
+              }
+            }
+          }
+        }
+      ]);
+
       } else {
         Alert.alert('Erro', result.message || 'Erro: ' + JSON.stringify(result));
       }
@@ -376,21 +417,7 @@ export default function DeliveryScreen() {
 
         {/* Info do Item */}
         <View style={styles.itemInfo}>
-          <View style={styles.itemHeader}>
-            <Text style={styles.itemNome}>{itemSelecionado.produtoNome}</Text>
-            {!isLiberado && (
-              <TouchableOpacity 
-                onPress={() => setSoundEnabled(!soundEnabled)}
-                style={styles.soundButton}
-              >
-                <Ionicons 
-                  name={soundEnabled ? 'volume-high' : 'volume-mute'} 
-                  size={24} 
-                  color={soundEnabled ? '#47a2f5' : '#999'} 
-                />
-              </TouchableOpacity>
-            )}
-          </View>
+          <Text style={styles.itemNome}>{itemSelecionado.produtoNome}</Text>
           <View style={styles.progressContainer}>
             <Text style={styles.progressText}>
               {isLiberado 
@@ -554,8 +581,11 @@ export default function DeliveryScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Ionicons name="truck-outline" size={32} color="#fff" />
+        <FontAwesome6 name="truck-fast" size={24} color="white" />
         <Text style={styles.headerTitle}>Entregas Pendentes</Text>
+        <TouchableOpacity onPress={carregarVendas} style={styles.refreshButton}>
+          <Ionicons name="refresh" size={24} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       {vendas.length === 0 ? (
@@ -602,6 +632,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  refreshButton: {
+    padding: 4,
   },
   backButton: {
     padding: 4,
@@ -725,20 +758,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  itemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   itemNome: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    flex: 1,
-  },
-  soundButton: {
-    padding: 8,
+    marginBottom: 16,
   },
   progressContainer: {
     gap: 8,
@@ -758,6 +782,9 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#4CAF50',
   },
+  progressFillCompleto: {
+    backgroundColor: '#4CAF50',
+  },
   scanButton: {
     backgroundColor: '#47a2f5',
     margin: 16,
@@ -767,6 +794,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+  },
+  scanButtonDisabled: {
+    backgroundColor: '#ccc',
   },
   scanButtonText: {
     color: '#fff',
@@ -831,6 +861,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     paddingTop: 48,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -839,13 +870,15 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 8,
   },
+  soundButtonScanner: {
+    padding: 8,
+  },
   scannerTitle: {
-    flex: 1,
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+    flex: 1,
     textAlign: 'center',
-    marginRight: 48,
   },
   overlay: {
     position: 'absolute',
@@ -924,6 +957,37 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 14,
     color: '#999',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  liberadoBadge: {
+    marginTop: 12,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  liberadoText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  itemLiberadoContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  itemLiberadoTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginTop: 16,
+  },
+  itemLiberadoSubtitle: {
+    fontSize: 16,
+    color: '#666',
     marginTop: 8,
     textAlign: 'center',
   },
