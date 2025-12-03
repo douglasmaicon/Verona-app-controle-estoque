@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Modal,
   Vibration,
+  Platform,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
@@ -247,6 +248,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    paddingBottom: Platform.OS === 'ios' ? 88 : 70,
     padding: 20,
   },
   header: {

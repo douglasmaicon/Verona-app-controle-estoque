@@ -10,6 +10,7 @@ import {
   Modal,
   Vibration,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Audio } from 'expo-av';
@@ -613,6 +614,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    paddingBottom: Platform.OS === 'ios' ? 88 : 100,
   },
   centerContainer: {
     flex: 1,
