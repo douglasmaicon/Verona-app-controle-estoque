@@ -203,10 +203,14 @@ export default function LoginScreen({
             // MODO LOGIN
             <>
               <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <Ionicons name="cube-outline" size={60} color="#47a2f5" />
+                <View style={styles.logoContainer}>                  
+                  <Image
+                    source={require('../../assets/verona_completo.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                                 
                 </View>
-                <Text style={styles.title}>Controle de Estoque</Text>
                 <Text style={styles.subtitle}>
                   Faça login para continuar
                 </Text>
@@ -333,13 +337,18 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
+    width: 60,
+    height: 60,
     borderRadius: 50,
     backgroundColor: "#e3f2fd",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+    marginBottom: 40,
+  },
+  logo: {
+    width: 280,
+    height: 280,
+    // borderRadius: 50,
   },
   title: {
     fontSize: 28,
